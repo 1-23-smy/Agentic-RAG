@@ -1,24 +1,22 @@
 import os
-from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import Qdrant
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams
 from models.schemas import HierarchicalChunk
 from typing import List
 
 class VectorStoreManager:
-    def __init__(self, collection_name: str = "medical_chunks"):
+    def __init__(self, collection_name: str = "medical_bge_chunks"):
         self.collection_name = collection_name
         
         qdrant_url = os.environ.get("QDRANT_URL", "http://localhost:6333")
         self.client = QdrantClient(url=qdrant_url)
         
-        # We use a state-of-the-art embedding model
-        # For a truly medically focused app, PubMedBERT or MedCPT would be better,
-        # but text-embedding-3-large serves as a phenomenal generalist baseline.
-        self.embeddings = OpenAIEmbeddings(
-            model="text-embedding-3-large",
-            openai_api_key=os.environ.get("OPENAI_API_KEY")
+        # Use local, state-of-the-art open source embeddings (BAAI/bge-small-en-v1.5)
+        self.embeddings = HuggingFaceEmbeddings(
+            model_name="BAAI/bge-small-en-v1.5",
+            # Optional: Add model_kwargs={"device": "mps"} or "cpu" / "cuda" if performance profiling is needed
         )
 
         self._ensure_collection_exists()
@@ -28,10 +26,10 @@ class VectorStoreManager:
         collections = self.client.get_collections().collections
         if not any(col.name == self.collection_name for col in collections):
             print(f"Creating Qdrant collection: {self.collection_name}")
-            # text-embedding-3-large dimension is 3072
+            # bge-small-en-v1.5 dimension is 384
             self.client.create_collection(
                 collection_name=self.collection_name,
-                vectors_config=VectorParams(size=3072, distance=Distance.COSINE),
+                vectors_config=VectorParams(size=384, distance=Distance.COSINE),
             )
 
     async def ingest_chunks(self, chunks: List[HierarchicalChunk]):
@@ -58,10 +56,10 @@ class VectorStoreManager:
         ]
 
         # Use Langchain's Qdrant wrapper to handle batching and inserting
-        vector_store = Qdrant(
+        vector_store = QdrantVectorStore(
             client=self.client,
             collection_name=self.collection_name,
-            embeddings=self.embeddings,
+            embedding=self.embeddings,
         )
         
         vector_store.add_texts(texts=texts, metadatas=metadatas)
@@ -69,9 +67,9 @@ class VectorStoreManager:
 
     def get_retriever(self, search_type="similarity", k=5):
         """Returns a LangChain retriever interface for the Agent to use."""
-        vector_store = Qdrant(
+        vector_store = QdrantVectorStore(
             client=self.client,
             collection_name=self.collection_name,
-            embeddings=self.embeddings,
+            embedding=self.embeddings,
         )
         return vector_store.as_retriever(search_type=search_type, search_kwargs={"k": k})

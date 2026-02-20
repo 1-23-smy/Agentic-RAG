@@ -1,6 +1,8 @@
+import asyncio
 from typing import List, Tuple
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 import os
@@ -13,13 +15,19 @@ class KnowledgeGraphResponse(BaseModel):
     relationships: List[EntityRelationship] = Field(description="List of relationships connecting the extracted entities.")
 
 class GraphExtractor:
-    def __init__(self, provider: str = "anthropic", model_name: str = "claude-3-5-sonnet-20240620"):
+    def __init__(self, provider: str = "gemini", model_name: str = "gemini-3.1-pro-preview"):
         if provider == "anthropic":
             # Anthropic is generally superior at strict structured output and complex relationship mapping
             self.llm = ChatAnthropic(
                 model=model_name, 
                 anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY"),
                 temperature=0 
+            )
+        elif provider == "gemini":
+            self.llm = ChatGoogleGenerativeAI(
+                model=model_name,
+                google_api_key=os.environ.get("GEMINI_API_KEY"),
+                temperature=0
             )
         elif provider == "openai":
             self.llm = ChatOpenAI(
@@ -28,7 +36,7 @@ class GraphExtractor:
                 temperature=0
             )
         else:
-            raise ValueError("Unsupported provider. Use 'anthropic' or 'openai'")
+            raise ValueError("Unsupported provider. Use 'gemini', 'anthropic', or 'openai'")
 
         # Bind the LLM to strictly output our Pydantic schema
         self.structured_llm = self.llm.with_structured_output(KnowledgeGraphResponse)
@@ -48,33 +56,48 @@ class GraphExtractor:
 
     async def extract_knowledge_graph(self, chunks: List[HierarchicalChunk]) -> Tuple[List[ExtractedEntity], List[EntityRelationship]]:
         """
-        Iterates over the hierarchical chunks and extracts the GraphRAG triples.
+        Iterates over the hierarchical chunks and extracts the GraphRAG triples asynchronously.
+        Uses a Semaphore to prevent exceeding LLM rate limits.
         """
         all_entities = []
         all_relationships = []
         
-        print(f"Extracting Knowledge Graph from {len(chunks)} chunks...")
+        print(f"Extracting Knowledge Graph from {len(chunks)} chunks concurrently...")
         
-        for chunk in chunks:
-            try:
-                # We skip tables for now to avoid noisy extraction, though they could be parsed differently
-                if chunk.metadata.is_table:
-                    continue
+        # Limit concurrent API calls to 5 at a time to avoid rate limits (429 Too Many Requests)
+        semaphore = asyncio.Semaphore(30)
+        
+        async def process_single_chunk(chunk, index):
+            if chunk.metadata.is_table:
+                return None
+                
+            async with semaphore:
+                try:
+                    response: KnowledgeGraphResponse = await self.chain.ainvoke({
+                        "chunk_id": chunk.chunk_id,
+                        "text": chunk.text
+                    })
                     
-                response: KnowledgeGraphResponse = await self.chain.ainvoke({
-                    "chunk_id": chunk.chunk_id,
-                    "text": chunk.text
-                })
-                
-                # Append the source chunk ID to all relationships for data lineage / deterministic citations
-                for rel in response.relationships:
-                    rel.source_chunk_id = chunk.chunk_id
-                    
-                all_entities.extend(response.entities)
-                all_relationships.extend(response.relationships)
-                
-            except Exception as e:
-                print(f"Failed to extract graph from chunk {chunk.chunk_id}. Error: {e}")
-                
+                    # Append the source chunk ID to all relationships for deterministic citations
+                    for rel in response.relationships:
+                        rel.source_chunk_id = chunk.chunk_id
+                        
+                    if index % 10 == 0 or index == 1:
+                        print(f"  -> Extracted {index}/{len(chunks)} chunks so far...")
+                        
+                    return response
+                except Exception as e:
+                    print(f"Failed to extract graph from chunk {chunk.chunk_id}. Error: {e}")
+                    return None
+
+        # Kick off all tasks concurrently
+        tasks = [process_single_chunk(chunk, i) for i, chunk in enumerate(chunks, 1)]
+        results = await asyncio.gather(*tasks)
+        
+        # Aggregate the results
+        for res in results:
+            if res:
+                all_entities.extend(res.entities)
+                all_relationships.extend(res.relationships)
         print(f"Extraction Complete: Found {len(all_entities)} Entities and {len(all_relationships)} Relationships.")
         return all_entities, all_relationships

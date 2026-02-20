@@ -18,3 +18,11 @@ openai
 anthropic
 langchain-openai
 langchain-anthropic
+langchain-google-genai
+fastapi
+uvicorn
+streamlit
+requests
+langchain-huggingface
+sentence-transformers
+langchain-qdrant
