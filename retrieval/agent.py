@@ -70,6 +70,17 @@ class UniversalRAGAgent:
         async for s in self.agent_executor.astream(inputs, stream_mode="values"):
             message = s["messages"][-1]
             message.pretty_print()
-            final_message = message.content
+            final_content = message.content
+            if isinstance(final_content, list):
+                # Handle block payloads from latest models (e.g. Gemini 2.0 list formatting)
+                text_parts = []
+                for item in final_content:
+                    if isinstance(item, dict) and 'text' in item:
+                        text_parts.append(item['text'])
+                    elif isinstance(item, str):
+                        text_parts.append(item)
+                final_message = "".join(text_parts)
+            else:
+                final_message = str(final_content)
 
         return final_message
