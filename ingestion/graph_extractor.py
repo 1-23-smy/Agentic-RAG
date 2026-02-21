@@ -68,9 +68,6 @@ class GraphExtractor:
         semaphore = asyncio.Semaphore(30)
         
         async def process_single_chunk(chunk, index):
-            if chunk.metadata.is_table:
-                return None
-                
             async with semaphore:
                 try:
                     response: KnowledgeGraphResponse = await self.chain.ainvoke({
