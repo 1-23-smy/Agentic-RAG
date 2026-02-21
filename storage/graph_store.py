@@ -1,4 +1,5 @@
 import os
+import re
 from neo4j import GraphDatabase
 from typing import List
 from models.schemas import ExtractedEntity, EntityRelationship
@@ -19,12 +20,14 @@ class GraphStoreManager:
         self.driver.close()
 
     def _format_entity_label(self, entity_type: str) -> str:
-        """Neo4j Labels conventionally use PascalCase with no spaces."""
-        return "".join(word.capitalize() for word in entity_type.replace("_", " ").split())
+        """Neo4j Labels conventionally use PascalCase with no spaces or special characters."""
+        clean_type = re.sub(r'[^a-zA-Z0-9\s]', ' ', entity_type)
+        return "".join(word.capitalize() for word in clean_type.split())
 
     def _format_relationship_type(self, relationship_type: str) -> str:
         """Neo4j Relationships conventionally use UPPER_SNAKE_CASE."""
-        return relationship_type.upper().replace(" ", "_")
+        clean_type = re.sub(r'[^a-zA-Z0-9\s]', ' ', relationship_type)
+        return re.sub(r'\s+', '_', clean_type.strip()).upper()
 
     def ingest_knowledge_graph(self, entities: List[ExtractedEntity], relationships: List[EntityRelationship]):
         """

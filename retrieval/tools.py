@@ -11,12 +11,12 @@ import os
 # --- VECTOR SEARCH TOOL ---
 
 class VectorSearchInput(BaseModel):
-    query: str = Field(description="The specific medical question to search for context (e.g., 'What is the dosage of Aspirin?').")
+    query: str = Field(description="The specific question or keyword to search for context (e.g., 'What is the theory?', or 'Overview/Introduction' for summaries).")
     search_type: str = Field(default="similarity", description="Either 'similarity' or 'mmr'")
 
 class VectorSearchTool(BaseTool):
     name: str = "vector_search"
-    description: str = "Useful for finding specific facts, paragraphs, or tables within the massive volume of medical documents."
+    description: str = "Useful for finding specific facts, OR retrieving general overviews/summaries of what the document is about."
     args_schema: Type[BaseModel] = VectorSearchInput
     vector_manager: VectorStoreManager = None
 
@@ -46,12 +46,12 @@ class VectorSearchTool(BaseTool):
 # --- GRAPH SEARCH TOOL ---
 
 class GraphSearchInput(BaseModel):
-    entity: str = Field(description="The primary medical entity to investigate (e.g., 'Aspirin' or 'Heart Disease').")
-    relationship_focus: Optional[str] = Field(default=None, description="Optional focus (e.g. 'TREATS', 'CAUSES').")
+    entity: str = Field(description="The primary entity or concept to investigate (e.g., 'Albert Einstein', 'Revenue 2023', or 'Quantum Mechanics').")
+    relationship_focus: Optional[str] = Field(default=None, description="Optional focus (e.g. 'CREATED', 'CAUSED').")
 
 class GraphSearchTool(BaseTool):
     name: str = "graph_search"
-    description: str = "Useful for discovering relationships between medical entities (e.g., finding all diseases treated by a drug, or symptoms caused by a condition)."
+    description: str = "Useful for discovering complex relationships between entities (e.g., finding connections, causes, networks, or traits)."
     args_schema: Type[BaseModel] = GraphSearchInput
     graph_manager: GraphStoreManager = None
 

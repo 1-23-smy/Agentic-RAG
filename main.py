@@ -7,19 +7,19 @@ from dotenv import load_dotenv
 # Load Env Vars (e.g., GEMINI_API_KEY, QDRANT_URL, NEO4J_URI) before importing Agent
 load_dotenv()
 
-from retrieval.agent import MedicalRAGAgent
+from retrieval.agent import UniversalRAGAgent
 
 app = FastAPI(
-    title="Medical Agentic RAG API",
-    description="A highly scalable Agentic RAG system that uses Graph and Vector Search over massive medical documents.",
+    title="Universal Agentic RAG API",
+    description="A highly scalable Agentic RAG system that uses Graph and Vector Search over massive documents.",
     version="1.0.0"
 )
 
 # Initialize global Agent so memory/TCP connections are preserved across requests
 try:
-    print("Initializing Medical RAG Agent backend...")
-    # Using Gemini as the default brain as configured
-    agent = MedicalRAGAgent(provider="gemini", model_name="gemini-2.5-pro")
+    print("Initializing Universal RAG Agent backend...")
+    # Swapped to gemini-2.0-flash because it fully supports LangGraph tool loops natively, avoiding 400 API errors!
+    agent = UniversalRAGAgent(provider="gemini", model_name="gemini-2.5-flash")
     print("Agent Initialized Successfully!")
 except Exception as e:
     print(f"Failed to initialize Agent: {e}")

@@ -8,8 +8,8 @@ from storage.vector_store import VectorStoreManager
 from storage.graph_store import GraphStoreManager
 from retrieval.tools import VectorSearchTool, GraphSearchTool
 
-class MedicalRAGAgent:
-    def __init__(self, provider: str = "gemini", model_name: str = "gemini-3.1-pro-preview"):
+class UniversalRAGAgent:
+    def __init__(self, provider: str = "gemini", model_name: str = "gemini-2.0-flash"):
         # Initialize the underlying storage connections
         self.vector_manager = VectorStoreManager()
         self.graph_manager = GraphStoreManager()
@@ -41,19 +41,21 @@ class MedicalRAGAgent:
             )
 
         # Build the LangGraph React Agent
-        # The ReAct architecture intrinsically handles the "Tool-Based Retrieval" and 
-        # "Self-Correction (Active Retrieval)" loops planned in the architecture!
         self.agent_executor = create_react_agent(
             self.llm,
             self.tools,
-            prompt="""You are a highly advanced Medical ReAct Agent. 
-            You have access to a massive 3000+ page medical database via two powerful tools:
-            1. vector_search: Use this to track down specific paragraphs, facts, or drug dosages.
-            2. graph_search: Use this if the query involves relationships (e.g., finding connections between diseases, drugs, or symptoms that might be pages apart).
+            prompt="""You are a highly advanced Universal Research Agent. 
+            CRITICAL INSTRUCTION: The user has ALREADY uploaded and ingested a massive database of documents into your memory. 
+            NEVER ask the user to provide a document or context. NEVER say you don't have access to the document.
             
-            Always evaluate if the context you received is sufficient to answer the user's question. 
+            When the user asks ANY question, YOU MUST IMMEDIATELY use your tools to scour the database for answers:
+            1. vector_search: Use this to track down specific facts, definitions, or broad document summaries.
+               -> Rule: If the user asks a completely general question like "What is this document about?", YOU MUST use vector_search with the query "Introduction" or "Overview".
+            2. graph_search: Use this if the query involves complex networks or relationships (e.g., finding connections between concepts, people, or events that might be pages apart).
+            
+            Always evaluate thoughtfully if the context you received from the tools is sufficient to answer the user's question precisely and accurately. 
             If not, think about what you are missing and use another tool to search again before giving your final answer.
-            When generating your final answer, ALWAYS site the [Doc ID | Chapter | Section] or [Citation ID] provided by the tools."""
+            When generating your final answer, ALWAYS cite your sources using the [Doc ID | Chapter | Section] or [Citation ID] provided by the tools to ensure zero hallucination."""
         )
 
     async def aquery(self, user_question: str) -> str:

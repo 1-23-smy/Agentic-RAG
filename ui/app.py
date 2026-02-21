@@ -1,10 +1,10 @@
 import streamlit as st
 import requests
 
-st.set_page_config(page_title="Medical Agentic RAG", page_icon="🩺", layout="centered")
+st.set_page_config(page_title="Universal Agentic RAG", page_icon="🧠", layout="centered")
 
-st.title("🩺 Agentic Medical RAG System")
-st.markdown("Ask complex medical questions spanning across 3000+ pages of dense documentation. The active RAG Agent will route requests between **Qdrant** (Vector Search) and **Neo4j** (Graph Search) to synthesize an accurate response with determinisic citations.")
+st.title("🧠 Universal Agentic RAG System")
+st.markdown("Ask deep, complex questions spanning across massive documents. The active Agent will autonomously route requests between **Qdrant** (Vector Search) and **Neo4j** (Graph Search) to synthesize an accurate, zero-hallucination response with deterministic citations.")
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -16,7 +16,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # React to user input
-if prompt := st.chat_input("Ask a clinical or pharmaceutical question..."):
+if prompt := st.chat_input("Ask a complex question about your documents..."):
     # Display user message in chat message container
     st.chat_message("user").markdown(prompt)
     

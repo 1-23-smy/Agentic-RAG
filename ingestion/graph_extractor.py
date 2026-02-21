@@ -11,7 +11,7 @@ from models.schemas import HierarchicalChunk, ExtractedEntity, EntityRelationshi
 
 class KnowledgeGraphResponse(BaseModel):
     """Schema for the LLM to output structured Graph data"""
-    entities: List[ExtractedEntity] = Field(description="List of medical entities found in the text.")
+    entities: List[ExtractedEntity] = Field(description="List of key entities, concepts, organizations, people, or technical terms found in the text.")
     relationships: List[EntityRelationship] = Field(description="List of relationships connecting the extracted entities.")
 
 class GraphExtractor:
@@ -43,12 +43,12 @@ class GraphExtractor:
         
         # Design the Graph Extraction Prompt
         self.prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are a world-class Expert Medical Data Extractor. 
-            Your task is to read chunks of medical texts and extract a comprehensive Knowledge Graph.
-            Identify critical entities like: Diseases, Drugs, Symptoms, Genes, Clinical Trials, and Patients.
-            Then, identify strict relationships between them (e.g. 'TREATS', 'CAUSES', 'IS_SYMPTOM_OF', 'INTERACTS_WITH').
+            ("system", """You are a world-class Expert Information Extractor. 
+            Your task is to read chunks of text and extract a comprehensive Knowledge Graph.
+            Identify critical entities such as: Key Concepts, People, Organizations, Locations, Technical Terms, Events, or Objects.
+            Then, identify strict relationships between them (e.g. 'CREATED_BY', 'CAUSES', 'PART_OF', 'DEPENDS_ON', 'RELATES_TO').
             
-            Be extremely precise. Stick to the text provided. Do not hallucinate external medical knowledge."""),
+            Be extremely precise. Stick strictly to the text provided. Do not hallucinate external knowledge."""),
             ("human", "Extract the knowledge graph from the following text chunk (ID: {chunk_id}):\n\n{text}")
         ])
         
