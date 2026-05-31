@@ -2,6 +2,9 @@
 
 Universal Agentic Retrieval-Augmented Generation system that ingests PDFs, builds both vector and knowledge-graph indexes, and answers questions with tool-driven reasoning and citations.
 
+## Why This Project
+Most RAG systems rely on vector search alone. This system combines vector similarity search with Neo4j knowledge graph traversal, enabling multi-hop reasoning and citation-backed responses that single-index RAG cannot achieve.
+
 ## Features
 - LlamaParse → structured Markdown parsing (tables preserved)
 - Hierarchical chunking with rich metadata
@@ -10,8 +13,58 @@ Universal Agentic Retrieval-Augmented Generation system that ingests PDFs, build
 - FastAPI backend + Streamlit UI
 - Optional Celery + Redis async ingestion
 
+## Tech Stack
+| Layer | Technology |
+|-------|------------|
+| PDF Parsing | LlamaParse |
+| Embeddings | HuggingFace bge-small-v1.5 |
+| Vector DB | Qdrant |
+| Graph DB | Neo4j |
+| Agent | LangGraph ReAct |
+| LLM | Gemini 2.5 Pro / OpenAI / Anthropic |
+| Backend | FastAPI |
+| UI | Streamlit |
+| Async Queue | Celery + Redis |
+
 ## Architecture
-See `architecture.md` for the full flow and diagram.
+
+```mermaid
+graph TD
+    classDef user fill:#2d3436,stroke:#74b9ff,stroke-width:2px,color:#dfe6e9
+    classDef system fill:#0984e3,stroke:#74b9ff,stroke-width:2px,color:#ffffff
+    classDef database fill:#6c5ce7,stroke:#a29bfe,stroke-width:2px,color:#ffffff
+    classDef llm fill:#d63031,stroke:#ff7675,stroke-width:2px,color:#ffffff
+
+    User[User]:::user -->|Uploads PDF| RawFolder[data/raw/]
+    User -->|Asks Question| UI[Streamlit UI]
+    UI <-->|API Calls| API[FastAPI Backend]
+
+    subgraph Ingestion Pipeline [Offline Ingestion Process]
+        RawFolder -->|Read Document| LlamaParse[LlamaParse Parser]
+        LlamaParse -->|Markdown Text| ProcessedFolder[data/processed/]
+        LlamaParse -->|Raw Chunks| Chunker[Hierarchical Chunker]
+    end
+
+    subgraph Dual-Database Storage
+        Chunker -->|Step 1: Embed Text| Embedding[HuggingFace bge-small-v1.5]
+        Embedding -->|384-Dim Vectors| Qdrant[(Qdrant Vector DB)]:::database
+        Chunker -->|Step 2: Extract Ontology| GraphExtractor[LLM Graph Extractor]:::llm
+        GraphExtractor -->|Entities & Relationships| Neo4j[(Neo4j Knowledge Graph)]:::database
+    end
+
+    subgraph Retrieval & Orchestration
+        API -->|Query| Agent[Universal ReAct Agent]:::system
+        Agent -->|LLM Reasoning| LLM[Foundation Model]:::llm
+        Agent -->|Checks semantic similarity| VectorTool[Vector Search Tool]
+        Agent -->|Checks multi-hop connections| GraphTool[Graph Search Tool]
+        VectorTool -->|Searches| Qdrant
+        GraphTool -->|Generates Cypher| Neo4j
+    end
+
+    Qdrant -->|Returns top chunks| Agent
+    Neo4j -->|Returns connected edges| Agent
+    Agent -->|Synthesizes final answer with citations| API
+```
 
 ## Quickstart
 
@@ -84,7 +137,6 @@ worker.py         Celery worker for async ingestion
 ```
 
 ## Tests (manual scripts)
-These are simple scripts that require environment variables to be set:
 ```bash
 python test_ingestion.py
 python test_storage.py
