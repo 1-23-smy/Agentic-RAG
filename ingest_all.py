@@ -52,8 +52,7 @@ async def main():
     try:
         parser = MedicalDocumentParser()
         chunker = HierarchicalChunker(target_chunk_size=2000, overlap=200)
-        # Using Gemini 3.1 Pro Preview as requested
-        extractor = GraphExtractor(provider="gemini", model_name="gemini-3.1-pro-preview")
+        extractor = GraphExtractor()
         
         vector_store = VectorStoreManager()
         graph_store = GraphStoreManager()
