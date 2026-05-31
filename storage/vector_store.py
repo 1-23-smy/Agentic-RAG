@@ -16,7 +16,7 @@ class VectorStoreManager:
         # Use local, state-of-the-art open source embeddings (BAAI/bge-small-en-v1.5)
         self.embeddings = HuggingFaceEmbeddings(
             model_name="BAAI/bge-small-en-v1.5",
-            # Optional: Add model_kwargs={"device": "mps"} or "cpu" / "cuda" if performance profiling is needed
+            model_kwargs={"device": "cpu"}
         )
 
         self._ensure_collection_exists()
