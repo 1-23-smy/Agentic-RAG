@@ -19,7 +19,7 @@ services:
     restart: unless-stopped
 
   neo4j:
-    image: neo4j:2026.05.0
+    image: neo4j:latest
     container_name: medscan-neo4j
     ports:
       - "7474:7474"
