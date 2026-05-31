@@ -11,6 +11,13 @@ services:
     environment:
       QDRANT_ALLOW_ANONYMOUS_READ: "true"
 
+  redis:
+    image: redis:alpine
+    container_name: medscan-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
 volumes:
   qdrant_data:
     driver: local
