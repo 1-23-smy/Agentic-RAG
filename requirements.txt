@@ -26,3 +26,5 @@ requests
 langchain-huggingface
 sentence-transformers
 langchain-qdrant
+celery==5.6.2
+redis==7.2.0
