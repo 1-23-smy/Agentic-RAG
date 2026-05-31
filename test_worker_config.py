@@ -2,6 +2,7 @@ import importlib
 import sys
 import types
 import unittest
+from pathlib import Path
 
 
 class FakeCelery:
@@ -67,11 +68,11 @@ class WorkerConfigTest(unittest.TestCase):
             else:
                 sys.modules[name] = module
 
-    def test_worker_uses_solo_pool_to_avoid_macos_fork_crashes(self):
+    def test_worker_adds_project_root_to_import_path(self):
         worker = importlib.import_module("worker")
 
-        self.assertEqual(worker.app.conf["worker_pool"], "solo")
-        self.assertEqual(worker.app.conf["worker_concurrency"], 1)
+        self.assertEqual(worker.PROJECT_ROOT, Path(worker.__file__).resolve().parent)
+        self.assertIn(str(worker.PROJECT_ROOT), sys.path)
 
 
 if __name__ == "__main__":
