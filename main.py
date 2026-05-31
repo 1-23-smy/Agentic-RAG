@@ -18,8 +18,7 @@ app = FastAPI(
 # Initialize global Agent so memory/TCP connections are preserved across requests
 try:
     print("Initializing Universal RAG Agent backend...")
-    # Swapped to gemini-2.0-flash because it fully supports LangGraph tool loops natively, avoiding 400 API errors!
-    agent = UniversalRAGAgent(provider="gemini", model_name="gemini-2.5-flash")
+    agent = UniversalRAGAgent()
     print("Agent Initialized Successfully!")
 except Exception as e:
     print(f"Failed to initialize Agent: {e}")
