@@ -84,6 +84,8 @@ Update `.env` with your own credentials. Minimum required for a full run:
 - `LLAMA_CLOUD_API_KEY` (PDF parsing)
 - `GEMINI_API_KEY` (default agent + graph extraction)  
   *(or `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` if you switch providers)*
+- `GRAPH_EXTRACTOR_PROVIDER` and `GRAPH_EXTRACTOR_MODEL_ID` (ingestion graph extraction LLM)
+- `RAG_AGENT_PROVIDER` and `RAG_AGENT_MODEL_ID` (retrieval agent LLM)
 - `QDRANT_URL` (defaults to `http://localhost:6333`)
 - `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD`, `NEO4J_DATABASE`
 
@@ -121,9 +123,11 @@ The Streamlit app calls `http://127.0.0.1:8000/chat`.
 ## Async ingestion (optional)
 If you want background ingestion with Celery:
 ```bash
-celery -A worker.app worker --loglevel=info
+celery -A worker.app worker --pool=solo --loglevel=info
 python submit_ingestion_jobs.py
 ```
+
+The `solo` pool avoids macOS fork crashes from ML libraries used during parsing and embedding.
 
 ## Project structure
 ```
