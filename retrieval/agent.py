@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 from langgraph.prebuilt import create_react_agent
 from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI
@@ -7,9 +8,14 @@ from langchain_core.messages import HumanMessage
 from storage.vector_store import VectorStoreManager
 from storage.graph_store import GraphStoreManager
 from retrieval.tools import VectorSearchTool, GraphSearchTool
+from config import get_retrieval_agent_config
 
 class UniversalRAGAgent:
-    def __init__(self, provider: str = "gemini", model_name: str = "gemini-2.0-flash"):
+    def __init__(self, provider: Optional[str] = None, model_name: Optional[str] = None):
+        llm_config = get_retrieval_agent_config()
+        provider = provider or llm_config.provider
+        model_name = model_name or llm_config.model_id
+
         # Initialize the underlying storage connections
         self.vector_manager = VectorStoreManager()
         self.graph_manager = GraphStoreManager()
