@@ -1,5 +1,5 @@
 import asyncio
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -7,6 +7,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 import os
 
+from config import get_graph_extractor_config
 from models.schemas import HierarchicalChunk, ExtractedEntity, EntityRelationship
 
 class KnowledgeGraphResponse(BaseModel):
@@ -15,7 +16,11 @@ class KnowledgeGraphResponse(BaseModel):
     relationships: List[EntityRelationship] = Field(description="List of relationships connecting the extracted entities.")
 
 class GraphExtractor:
-    def __init__(self, provider: str = "gemini", model_name: str = "gemini-2.5-flash"):
+    def __init__(self, provider: Optional[str] = None, model_name: Optional[str] = None):
+        llm_config = get_graph_extractor_config()
+        provider = provider or llm_config.provider
+        model_name = model_name or llm_config.model_id
+
         if provider == "anthropic":
             # Anthropic is generally superior at strict structured output and complex relationship mapping
             self.llm = ChatAnthropic(
