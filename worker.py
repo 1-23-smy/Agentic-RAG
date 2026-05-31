@@ -1,6 +1,12 @@
 import multiprocessing
 multiprocessing.set_start_method("spawn", force=True)  # MUST be first
 
+import sys
+from pathlib import Path
+PROJECT_ROOT = Path(__file__).resolve().parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import asyncio
 import os
 from celery import Celery
@@ -35,6 +41,12 @@ def get_or_create_loop():
         return loop
 
 async def async_process_document(file_path: str):
+    import sys
+    from pathlib import Path
+    project_root = str(Path(__file__).resolve().parent)
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+
     from ingestion.parser import MedicalDocumentParser
     from ingestion.chunker import HierarchicalChunker
     from ingestion.graph_extractor import GraphExtractor
@@ -64,8 +76,16 @@ async def async_process_document(file_path: str):
     await vector_store.ingest_chunks(chunks)
 
     print("\n[Step 5/5] Ingesting Graph Triples to Neo4j...")
-    graph_store.ingest_knowledge_graph(entities, relationships)
-    graph_store.close()
+    try:
+        graph_store.ingest_knowledge_graph(entities, relationships)
+    except Exception as e:
+        print(f"\n⚠️ Warning: Failed to ingest Graph Triples into Neo4j: {e}")
+        print("Ingestion will continue without Knowledge Graph data.")
+    finally:
+        try:
+            graph_store.close()
+        except Exception:
+            pass
 
     filename = os.path.basename(file_path)
     if not os.path.exists(PROCESSED_DATA_DIR):
