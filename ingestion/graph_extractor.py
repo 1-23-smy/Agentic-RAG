@@ -15,7 +15,7 @@ class KnowledgeGraphResponse(BaseModel):
     relationships: List[EntityRelationship] = Field(description="List of relationships connecting the extracted entities.")
 
 class GraphExtractor:
-    def __init__(self, provider: str = "gemini", model_name: str = "gemini-3.1-pro-preview"):
+    def __init__(self, provider: str = "gemini", model_name: str = "gemini-2.5-flash"):
         if provider == "anthropic":
             # Anthropic is generally superior at strict structured output and complex relationship mapping
             self.llm = ChatAnthropic(
