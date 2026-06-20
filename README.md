@@ -109,6 +109,11 @@ The pipeline parses PDFs, chunks them, extracts a knowledge graph, ingests into 
 python main.py
 ```
 
+### 6. Run the FastAPI backend
+```bash 
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+
 FastAPI serves:
 - `GET /` → health message
 - `POST /chat` → agent response
@@ -123,7 +128,7 @@ The Streamlit app calls `http://127.0.0.1:8000/chat`.
 ## Async ingestion (optional)
 If you want background ingestion with Celery:
 ```bash
-celery -A worker.app worker --pool=solo --loglevel=info
+celery -A worker.app worker --pool=prefork --loglevel=info
 python submit_ingestion_jobs.py
 ```
 
