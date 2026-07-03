@@ -4,6 +4,25 @@ import types
 import unittest
 from unittest.mock import MagicMock, patch, ANY
 
+MISSING = object()
+
+# Modules stubbed in install_stubs()
+STUBBED_MODULES = [
+    "langchain_core.tools",
+    "pydantic",
+    "langchain_core.messages",
+    "langgraph.prebuilt",
+    "langchain_anthropic",
+    "langchain_openai",
+    "langchain_google_genai",
+    "storage.vector_store",
+    "storage.graph_store",
+    "config",
+    "retrieval.agent",
+    "retrieval.tools",
+    "retrieval.trace",
+]
+
 # Pre-install stubs before any imports that might use them
 def install_stubs():
     # Create mock objects
@@ -57,19 +76,39 @@ def install_stubs():
     )
     sys.modules["config"] = config_mod
 
-# Install stubs at module load time, before imports
-install_stubs()
-
 
 class AgentQueryTest(unittest.TestCase):
     def setUp(self):
+        # Snapshot the current state of all modules we're about to stub
+        self.original_modules = {
+            name: sys.modules.get(name, MISSING)
+            for name in STUBBED_MODULES
+        }
+
+        # Install stubs before importing retrieval.agent
+        install_stubs()
+
         # Clean up any previously imported modules
         sys.modules.pop("retrieval.agent", None)
         sys.modules.pop("retrieval.tools", None)
+        sys.modules.pop("retrieval.trace", None)
 
         # Now import the module with stubs in place
         import retrieval.agent as agent_module
         self.agent_module = agent_module
+
+    def tearDown(self):
+        # Clean up the imported module
+        sys.modules.pop("retrieval.agent", None)
+        sys.modules.pop("retrieval.tools", None)
+        sys.modules.pop("retrieval.trace", None)
+
+        # Restore all stubbed modules to their original state
+        for name, module in self.original_modules.items():
+            if module is MISSING:
+                sys.modules.pop(name, None)
+            else:
+                sys.modules[name] = module
 
     def test_aquery_returns_answer_with_reasoning_steps_and_sources(self):
         agent = self.agent_module.UniversalRAGAgent.__new__(self.agent_module.UniversalRAGAgent)
