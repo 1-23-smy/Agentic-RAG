@@ -41,11 +41,22 @@ def install_main_import_stubs():
         def post(self, *args, **kwargs):
             return lambda fn: fn
 
+        def add_middleware(self, *args, **kwargs):
+            pass
+
     fastapi.FastAPI = FastAPI
     fastapi.HTTPException = HTTPException
     fastapi.UploadFile = object
     fastapi.File = lambda *args, **kwargs: None
     sys.modules["fastapi"] = fastapi
+
+    fastapi_middleware = types.ModuleType("fastapi.middleware")
+    fastapi_middleware_cors = types.ModuleType("fastapi.middleware.cors")
+    fastapi_middleware_cors.CORSMiddleware = object
+    fastapi.middleware = fastapi_middleware
+    fastapi.middleware.cors = fastapi_middleware_cors
+    sys.modules["fastapi.middleware"] = fastapi_middleware
+    sys.modules["fastapi.middleware.cors"] = fastapi_middleware_cors
 
     pydantic = types.ModuleType("pydantic")
 
@@ -74,11 +85,19 @@ def install_main_import_stubs():
     retrieval = types.ModuleType("retrieval")
     retrieval_agent = types.ModuleType("retrieval.agent")
 
+    class AgentAnswer:
+        def __init__(self, answer, reasoning_steps=None, sources=None, graph_triples=None):
+            self.answer = answer
+            self.reasoning_steps = reasoning_steps or []
+            self.sources = sources or []
+            self.graph_triples = graph_triples or []
+
     class UniversalRAGAgent:
         async def aquery(self, query):
-            return f"answer: {query}"
+            return AgentAnswer(answer=f"answer: {query}")
 
     retrieval_agent.UniversalRAGAgent = UniversalRAGAgent
+    retrieval_agent.AgentAnswer = AgentAnswer
     sys.modules["retrieval"] = retrieval
     sys.modules["retrieval.agent"] = retrieval_agent
 
@@ -169,6 +188,47 @@ class IngestApiTest(unittest.TestCase):
         self.assertEqual(response.status, "FAILURE")
         self.assertEqual(response.message, "Ingestion failed. Please check the worker logs and try again.")
         self.assertEqual(response.error, "parse failed")
+
+    def test_chat_endpoint_returns_reasoning_trace_and_sources(self):
+        self.main.agent = types.SimpleNamespace(
+            aquery=lambda q: _async_result(self.main.AgentAnswer(
+                answer="Warfarin interacts with amiodarone.",
+                reasoning_steps=[{"mode": "vector", "query": "warfarin", "detail": "Retrieved 1 chunk."}],
+                sources=[{"doc_id": "d1", "chapter": "Ch 1", "section": "1", "score": 0.9, "snippet": "..."}],
+                graph_triples=[],
+            ))
+        )
+
+        response = asyncio.run(self.main.chat_endpoint(self.main.ChatRequest(query="q")))
+
+        self.assertEqual(response.answer, "Warfarin interacts with amiodarone.")
+        self.assertEqual(len(response.reasoning_steps), 1)
+        self.assertEqual(len(response.sources), 1)
+        self.assertEqual(response.graph_triples, [])
+
+    def test_list_documents_merges_ready_and_in_flight(self):
+        self.main._ingestion_registry.clear()
+        self.main._ingestion_registry["task-1"] = {"filename": "queued_doc.pdf", "status": "queued"}
+        self.main.agent = types.SimpleNamespace(
+            vector_manager=types.SimpleNamespace(list_document_ids=lambda: ["ready_doc.pdf"])
+        )
+
+        with patch.object(self.main, "AsyncResult", return_value=types.SimpleNamespace(state="PENDING")):
+            response = self.main.list_documents()
+
+        ids = {d.id for d in response.documents}
+        self.assertIn("ready_doc.pdf", ids)
+        self.assertIn("task-1", ids)
+        ready = next(d for d in response.documents if d.id == "ready_doc.pdf")
+        self.assertEqual(ready.status, "ready")
+        queued = next(d for d in response.documents if d.id == "task-1")
+        self.assertEqual(queued.status, "queued")
+
+
+def _async_result(value):
+    async def _coro(*args, **kwargs):
+        return value
+    return _coro()
 
 
 if __name__ == "__main__":
