@@ -16,6 +16,7 @@ load_dotenv()
 
 from retrieval.agent import UniversalRAGAgent, AgentAnswer
 from worker import app as celery_app, process_pdf_task
+from models.schemas import ReasoningStep, VectorSourceResult, GraphTriple
 
 RAW_DATA_DIR = Path("data/raw")
 
@@ -46,27 +47,6 @@ except Exception as e:
 # registry from growing unbounded and avoids a second source of truth once
 # a document is actually ready.
 _ingestion_registry: Dict[str, dict] = {}
-
-
-class ReasoningStep(BaseModel):
-    mode: str
-    query: str
-    detail: str
-
-
-class VectorSourceResult(BaseModel):
-    doc_id: str
-    chapter: Optional[str] = None
-    section: Optional[str] = None
-    score: float
-    snippet: str
-
-
-class GraphTriple(BaseModel):
-    source: str
-    rel: str
-    target: str
-    detail: Optional[str] = None
 
 
 class ChatRequest(BaseModel):

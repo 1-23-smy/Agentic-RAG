@@ -65,7 +65,12 @@ def install_main_import_stubs():
             for key, value in kwargs.items():
                 setattr(self, key, value)
 
+    def Field(*args, **kwargs):
+        """Stub for pydantic.Field"""
+        return None
+
     pydantic.BaseModel = BaseModel
+    pydantic.Field = Field
     sys.modules["pydantic"] = pydantic
 
     dotenv = types.ModuleType("dotenv")
