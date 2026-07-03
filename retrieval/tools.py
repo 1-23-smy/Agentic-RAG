@@ -1,12 +1,9 @@
 from typing import Optional, Type, Dict, Any, List
 from pydantic import BaseModel, Field
 from langchain_core.tools import BaseTool
-import json
 from storage.vector_store import VectorStoreManager
 from storage.graph_store import GraphStoreManager
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-import os
+from retrieval.trace import TraceCollector
 
 # --- VECTOR SEARCH TOOL ---
 
@@ -19,25 +16,38 @@ class VectorSearchTool(BaseTool):
     description: str = "Useful for finding specific facts, OR retrieving general overviews/summaries of what the document is about."
     args_schema: Type[BaseModel] = VectorSearchInput
     vector_manager: VectorStoreManager = None
+    trace: TraceCollector = None
 
-    def __init__(self, vector_manager: VectorStoreManager):
+    def __init__(self, vector_manager: VectorStoreManager, trace: TraceCollector):
         super().__init__()
         self.vector_manager = vector_manager
+        self.trace = trace
 
     def _run(self, query: str, search_type: str = "similarity") -> str:
         try:
-            retriever = self.vector_manager.get_retriever(search_type=search_type, k=4)
-            docs = retriever.invoke(query)
-            
-            if not docs:
+            results = self.vector_manager.similarity_search_with_score(query, k=4)
+
+            if not results:
+                self.trace.add_vector_step(query=query, sources=[])
                 return "No relevant vector documents found."
-                
+
             formatted_docs = []
-            for d in docs:
-                # We return both the text and the metadata hierarchy so the Agent knows *where* it is
-                metadata_str = f"[Doc: {d.metadata.get('document_id')} | Chapter: {d.metadata.get('chapter', 'N/A')} | Section: {d.metadata.get('section', 'N/A')}]"
-                formatted_docs.append(f"{metadata_str}\n{d.page_content}")
-                
+            structured_sources = []
+            for doc, score in results:
+                doc_id = doc.metadata.get("document_id")
+                chapter = doc.metadata.get("chapter")
+                section = doc.metadata.get("section")
+                metadata_str = f"[Doc: {doc_id} | Chapter: {chapter or 'N/A'} | Section: {section or 'N/A'}]"
+                formatted_docs.append(f"{metadata_str}\n{doc.page_content}")
+                structured_sources.append({
+                    "doc_id": doc_id,
+                    "chapter": chapter,
+                    "section": section,
+                    "score": round(float(score), 2),
+                    "snippet": doc.page_content[:280],
+                })
+
+            self.trace.add_vector_step(query=query, sources=structured_sources)
             return "\n\n---\n\n".join(formatted_docs)
         except Exception as e:
             return f"Error executing Vector Search: {str(e)}"
@@ -54,15 +64,15 @@ class GraphSearchTool(BaseTool):
     description: str = "Useful for discovering complex relationships between entities (e.g., finding connections, causes, networks, or traits)."
     args_schema: Type[BaseModel] = GraphSearchInput
     graph_manager: GraphStoreManager = None
+    trace: TraceCollector = None
 
-    def __init__(self, graph_manager: GraphStoreManager):
+    def __init__(self, graph_manager: GraphStoreManager, trace: TraceCollector):
         super().__init__()
         self.graph_manager = graph_manager
+        self.trace = trace
 
     def _run(self, entity: str, relationship_focus: Optional[str] = None) -> str:
         try:
-            # We construct a Cypher query to find 1st and 2nd degree connections to the entity
-            # We use a case-insensitive regex match since LLM capitalization varies
             query = """
             MATCH (source)-[r]-(target)
             WHERE source.id =~ '(?i).*' + $entity + '.*' OR target.id =~ '(?i).*' + $entity + '.*'
@@ -76,23 +86,31 @@ class GraphSearchTool(BaseTool):
             """
 
             results = self.graph_manager.run_cypher_query(
-                query, 
+                query,
                 {"entity": entity, "rel_focus": relationship_focus or ""}
             )
 
             if not results:
+                self.trace.add_graph_step(entity=entity, triples=[])
                 return f"No complex relationships found in the Knowledge Graph for entity: {entity}."
 
-            # Format the output for the LLM agent to read easily
             output_lines = [f"Found {len(results)} relationships in the knowledge graph for '{entity}':"]
+            structured_triples = []
             for r in results:
                 line = f"[{r['Source']}] --({r['Relationship']})--> [{r['Target']}]"
                 if r['Detail']:
-                   line += f"\n   Context: {r['Detail']}"
+                    line += f"\n   Context: {r['Detail']}"
                 if r['SourceChunk']:
-                   line += f"\n   Citation ID: {r['SourceChunk']}"
+                    line += f"\n   Citation ID: {r['SourceChunk']}"
                 output_lines.append(line)
+                structured_triples.append({
+                    "source": r["Source"],
+                    "rel": r["Relationship"],
+                    "target": r["Target"],
+                    "detail": r["Detail"],
+                })
 
+            self.trace.add_graph_step(entity=entity, triples=structured_triples)
             return "\n".join(output_lines)
         except Exception as e:
             return f"Error executing Graph Search: {str(e)}"
