@@ -10,7 +10,7 @@ Most RAG systems rely on vector search alone. This system combines vector simila
 - Hierarchical chunking with rich metadata
 - Dual storage: Qdrant (vector) + Neo4j (graph)
 - LangGraph ReAct agent with `vector_search` and `graph_search` tools
-- FastAPI backend + Streamlit UI
+- FastAPI backend + Next.js frontend
 - Optional Celery + Redis async ingestion
 
 ## Tech Stack
@@ -23,7 +23,7 @@ Most RAG systems rely on vector search alone. This system combines vector simila
 | Agent | LangGraph ReAct |
 | LLM | Gemini 2.5 Pro / OpenAI / Anthropic |
 | Backend | FastAPI |
-| UI | Streamlit |
+| UI | Next.js 16 + TypeScript + Tailwind CSS |
 | Async Queue | Celery + Redis |
 
 ## Architecture
@@ -36,7 +36,7 @@ graph TD
     classDef llm fill:#d63031,stroke:#ff7675,stroke-width:2px,color:#ffffff
 
     User[User]:::user -->|Uploads PDF| RawFolder[data/raw/]
-    User -->|Asks Question| UI[Streamlit UI]
+    User -->|Asks Question| UI[Next.js Frontend]
     UI <-->|API Calls| API[FastAPI Backend]
 
     subgraph Ingestion Pipeline [Offline Ingestion Process]
@@ -118,12 +118,14 @@ FastAPI serves:
 - `GET /` → health message
 - `POST /chat` → agent response
 
-### 6. Run the UI
+### 7. Run the Next.js frontend
 ```bash
-streamlit run ui/app.py
+cd frontend
+pnpm install
+pnpm dev
 ```
 
-The Streamlit app calls `http://127.0.0.1:8000/chat`.
+The Next.js app calls the FastAPI backend at `http://127.0.0.1:8000`. You can customize the API URL by setting `NEXT_PUBLIC_API_URL` (defaults to `http://127.0.0.1:8000`).
 
 ## Async ingestion (optional)
 If you want background ingestion with Celery:
@@ -139,7 +141,7 @@ The `solo` pool avoids macOS fork crashes from ML libraries used during parsing 
 ingestion/        LlamaParse, chunking, graph extraction
 retrieval/        LangGraph agent + tools
 storage/          Qdrant and Neo4j managers
-ui/               Streamlit frontend
+frontend/         Next.js frontend (TypeScript + Tailwind CSS)
 main.py           FastAPI backend
 ingest_all.py     End-to-end ingestion pipeline
 worker.py         Celery worker for async ingestion
