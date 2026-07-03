@@ -27,3 +27,24 @@ class EntityRelationship(BaseModel):
     relationship_type: str  # e.g., 'TREATS', 'CAUSES', 'IS_SYMPTOM_OF'
     description: str
     source_chunk_id: str
+
+
+class ReasoningStep(BaseModel):
+    mode: str  # "vector" | "graph"
+    query: str
+    detail: str
+
+
+class VectorSourceResult(BaseModel):
+    doc_id: str
+    chapter: Optional[str] = None
+    section: Optional[str] = None
+    score: float
+    snippet: str
+
+
+class GraphTriple(BaseModel):
+    source: str
+    rel: str
+    target: str
+    detail: Optional[str] = None
