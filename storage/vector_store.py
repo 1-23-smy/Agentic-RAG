@@ -73,3 +73,33 @@ class VectorStoreManager:
             embedding=self.embeddings,
         )
         return vector_store.as_retriever(search_type=search_type, search_kwargs={"k": k})
+
+    def similarity_search_with_score(self, query: str, k: int = 4):
+        """Like get_retriever(...).invoke(query) but also returns each
+        chunk's similarity score, needed for the Sources panel."""
+        vector_store = QdrantVectorStore(
+            client=self.client,
+            collection_name=self.collection_name,
+            embedding=self.embeddings,
+        )
+        return vector_store.similarity_search_with_score(query, k=k)
+
+    def list_document_ids(self) -> List[str]:
+        """Returns the distinct document_id values ingested into this
+        collection, used to populate the sidebar document library."""
+        seen = set()
+        offset = None
+        while True:
+            points, offset = self.client.scroll(
+                collection_name=self.collection_name,
+                with_payload=["document_id"],
+                limit=256,
+                offset=offset,
+            )
+            for point in points:
+                doc_id = point.payload.get("document_id")
+                if doc_id:
+                    seen.add(doc_id)
+            if offset is None:
+                break
+        return sorted(seen)
