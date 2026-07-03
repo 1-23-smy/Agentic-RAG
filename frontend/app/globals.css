@@ -1,7 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..600&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..600&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
@@ -131,6 +131,7 @@
 }
 
 /* tokens/fonts.css */
+/* @import moved to the top of this file — CSS requires @import rules to precede all other rules */
 /* ============================================================
    FONTS — Agentic RAG
    Loaded from Google Fonts CDN (see README: font substitution note).
