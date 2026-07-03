@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:ital,wght@0,400..800;1,400..600&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
@@ -127,4 +128,497 @@
   html {
     @apply font-sans;
   }
+}
+
+/* tokens/fonts.css */
+/* ============================================================
+   FONTS — Agentic RAG
+   Loaded from Google Fonts CDN (see README: font substitution note).
+   Display : Bricolage Grotesque
+   UI/Body : Hanken Grotesk
+   Mono    : IBM Plex Mono  (citations, doc IDs, entity types, code)
+   ============================================================ */
+
+/* tokens/colors.css */
+/* ============================================================
+   COLORS — Agentic RAG
+   Cool slate neutrals · cobalt "agent" primary ·
+   dual-retrieval accents (teal = Vector, violet = Graph)
+   ============================================================ */
+
+:root {
+  /* --- Neutrals: cool slate (ink) --- */
+  --ink-950: #0B0F1A;
+  --ink-900: #111725;
+  --ink-800: #1B2333;
+  --ink-700: #2A3346;
+  --ink-600: #46506A;
+  --ink-500: #6B7488;
+  --ink-400: #949CAE;
+  --ink-300: #C3C9D4;
+  --ink-200: #DEE2EA;
+  --ink-100: #EDEFF3;
+  --ink-50:  #F6F7F9;
+  --paper:   #FFFFFF;
+
+  /* --- Primary: cobalt "agent" signal --- */
+  --signal-50:  #EDF2FF;
+  --signal-100: #DBE4FF;
+  --signal-200: #B7C8FF;
+  --signal-300: #8AA5FF;
+  --signal-400: #5B80FF;
+  --signal-500: #2F6BFF;
+  --signal-600: #1D54F0;
+  --signal-700: #143FCC;
+  --signal-800: #1235A0;
+
+  /* --- Vector retrieval (Qdrant · semantic space) — teal --- */
+  --vector-50:  #E6FBF7;
+  --vector-100: #C3F4EC;
+  --vector-300: #5FDCC9;
+  --vector-500: #12B5A6;
+  --vector-600: #0E9384;
+  --vector-700: #0B7468;
+
+  /* --- Graph retrieval (Neo4j · relationships) — violet --- */
+  --graph-50:  #F1ECFE;
+  --graph-100: #E3D8FD;
+  --graph-300: #B79CF8;
+  --graph-500: #8B5CF6;
+  --graph-600: #7C3AED;
+  --graph-700: #6428C7;
+
+  /* --- Semantic --- */
+  --success-500: #16A34A;
+  --success-600: #128040;
+  --success-50:  #E7F6ED;
+  --warning-500: #D97706;
+  --warning-600: #B25E04;
+  --warning-50:  #FBF0E0;
+  --danger-500:  #DC2626;
+  --danger-600:  #B91C1C;
+  --danger-50:   #FBE9E9;
+
+  /* ==========================================================
+     SEMANTIC ALIASES
+     ========================================================== */
+
+  /* Surfaces */
+  --surface-page:     var(--ink-50);
+  --surface-card:     var(--paper);
+  --surface-sunken:   var(--ink-100);
+  --surface-raised:   var(--paper);
+  --surface-inverse:  var(--ink-950);
+  --surface-overlay:  color-mix(in oklab, var(--ink-950) 55%, transparent);
+
+  /* Text */
+  --text-strong:   var(--ink-950);
+  --text-body:     var(--ink-800);
+  --text-muted:    var(--ink-500);
+  --text-faint:    var(--ink-400);
+  --text-inverse:  var(--ink-50);
+  --text-link:     var(--signal-600);
+  --text-on-accent:#FFFFFF;
+
+  /* Borders */
+  --border-subtle: var(--ink-200);
+  --border-default:var(--ink-300);
+  --border-strong: var(--ink-400);
+  --border-focus:  var(--signal-500);
+
+  /* Brand roles */
+  --accent:            var(--signal-600);
+  --accent-hover:      var(--signal-700);
+  --accent-soft:       var(--signal-50);
+  --accent-soft-text:  var(--signal-700);
+
+  /* Retrieval modes */
+  --mode-vector:       var(--vector-600);
+  --mode-vector-soft:  var(--vector-50);
+  --mode-vector-text:  var(--vector-700);
+  --mode-graph:        var(--graph-600);
+  --mode-graph-soft:   var(--graph-50);
+  --mode-graph-text:   var(--graph-700);
+
+  /* Focus ring */
+  --ring: 0 0 0 3px color-mix(in oklab, var(--signal-500) 35%, transparent);
+}
+
+/* ============================================================
+   DARK — console theme (dev tool surface)
+   ============================================================ */
+[data-theme="dark"] {
+  --surface-page:    var(--ink-950);
+  --surface-card:    var(--ink-900);
+  --surface-sunken:  #080B12;
+  --surface-raised:  var(--ink-800);
+  --surface-inverse: var(--paper);
+  --surface-overlay: color-mix(in oklab, #000 62%, transparent);
+
+  --text-strong:  #F4F6FA;
+  --text-body:    var(--ink-200);
+  --text-muted:   var(--ink-400);
+  --text-faint:   var(--ink-500);
+  --text-inverse: var(--ink-950);
+  --text-link:    var(--signal-300);
+
+  --border-subtle:  var(--ink-800);
+  --border-default: var(--ink-700);
+  --border-strong:  var(--ink-600);
+
+  --accent:           var(--signal-500);
+  --accent-hover:     var(--signal-400);
+  --accent-soft:      color-mix(in oklab, var(--signal-500) 16%, var(--ink-900));
+  --accent-soft-text: var(--signal-300);
+
+  --mode-vector-soft: color-mix(in oklab, var(--vector-500) 15%, var(--ink-900));
+  --mode-vector-text: var(--vector-300);
+  --mode-graph-soft:  color-mix(in oklab, var(--graph-500) 16%, var(--ink-900));
+  --mode-graph-text:  var(--graph-300);
+}
+
+/* tokens/typography.css */
+/* ============================================================
+   TYPOGRAPHY — Agentic RAG
+   ============================================================ */
+
+:root {
+  /* Families */
+  --font-display: "Bricolage Grotesque", "Hanken Grotesk", system-ui, sans-serif;
+  --font-sans:    "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Weights */
+  --fw-regular:  400; /* @kind font */
+  --fw-medium:   500; /* @kind font */
+  --fw-semibold: 600; /* @kind font */
+  --fw-bold:     700; /* @kind font */
+  --fw-extra:    800; /* @kind font */
+
+  /* Type scale (rem, 16px base) */
+  --text-2xs: 0.6875rem;  /* 11px — micro labels, mono captions */
+  --text-xs:  0.75rem;    /* 12px */
+  --text-sm:  0.8125rem;  /* 13px — UI default */
+  --text-md:  0.9375rem;  /* 15px — body */
+  --text-lg:  1.0625rem;  /* 17px */
+  --text-xl:  1.3125rem;  /* 21px */
+  --text-2xl: 1.625rem;   /* 26px */
+  --text-3xl: 2.125rem;   /* 34px */
+  --text-4xl: 2.75rem;    /* 44px */
+  --text-5xl: 3.75rem;    /* 60px — display */
+
+  /* Line heights */
+  --lh-tight:   1.1;  /* @kind font */
+  --lh-snug:    1.28; /* @kind font */
+  --lh-normal:  1.5;  /* @kind font */
+  --lh-relaxed: 1.65; /* @kind font */
+
+  /* Tracking */
+  --track-tight:  -0.02em; /* @kind font */
+  --track-snug:   -0.01em; /* @kind font */
+  --track-normal: 0em;     /* @kind font */
+  --track-wide:   0.02em;  /* @kind font */
+  --track-caps:   0.08em;  /* @kind font */
+
+  /* ---- Semantic type roles ---- */
+  --type-display: var(--fw-extra) var(--text-5xl)/var(--lh-tight) var(--font-display);
+  --type-h1:      var(--fw-bold) var(--text-3xl)/var(--lh-snug) var(--font-display);
+  --type-h2:      var(--fw-bold) var(--text-2xl)/var(--lh-snug) var(--font-display);
+  --type-h3:      var(--fw-semibold) var(--text-xl)/var(--lh-snug) var(--font-sans);
+  --type-body:    var(--fw-regular) var(--text-md)/var(--lh-relaxed) var(--font-sans);
+  --type-ui:      var(--fw-medium) var(--text-sm)/var(--lh-normal) var(--font-sans);
+  --type-label:   var(--fw-semibold) var(--text-xs)/var(--lh-normal) var(--font-sans);
+  --type-mono:    var(--fw-regular) var(--text-sm)/var(--lh-normal) var(--font-mono);
+  --type-eyebrow: var(--fw-medium) var(--text-2xs)/var(--lh-normal) var(--font-mono);
+}
+
+/* tokens/spacing.css */
+/* ============================================================
+   SPACING — Agentic RAG · 4px base grid
+   ============================================================ */
+
+:root {
+  --space-0:  0;
+  --space-1:  0.25rem;   /* 4  */
+  --space-2:  0.5rem;    /* 8  */
+  --space-3:  0.75rem;   /* 12 */
+  --space-4:  1rem;      /* 16 */
+  --space-5:  1.25rem;   /* 20 */
+  --space-6:  1.5rem;    /* 24 */
+  --space-8:  2rem;      /* 32 */
+  --space-10: 2.5rem;    /* 40 */
+  --space-12: 3rem;      /* 48 */
+  --space-16: 4rem;      /* 64 */
+  --space-20: 5rem;      /* 80 */
+  --space-24: 6rem;      /* 96 */
+
+  /* Layout */
+  --container-max:  1240px;
+  --container-prose: 68ch;
+  --sidebar-w:      280px;
+  --composer-max:   760px;
+
+  /* Component insets */
+  --pad-control:  0.5rem 0.875rem;   /* buttons, inputs */
+  --pad-card:     var(--space-5);
+  --pad-section:  var(--space-12);
+}
+
+/* tokens/radius.css */
+/* ============================================================
+   RADIUS & BORDERS — Agentic RAG · precise, slightly tight
+   ============================================================ */
+
+:root {
+  --radius-xs:   3px;
+  --radius-sm:   5px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-2xl:  22px;
+  --radius-full: 999px;
+
+  /* Border widths */
+  --border-w:      1px;
+  --border-w-thick: 1.5px;
+
+  /* Semantic radii */
+  --radius-control: var(--radius-md);   /* buttons, inputs */
+  --radius-card:    var(--radius-lg);
+  --radius-chip:    var(--radius-full);
+  --radius-panel:   var(--radius-xl);
+}
+
+/* tokens/elevation.css */
+/* ============================================================
+   ELEVATION — Agentic RAG · cool, layered, low-contrast
+   Shadows are tinted with ink for a technical, flat feel.
+   ============================================================ */
+
+:root {
+  --shadow-xs: 0 1px 2px rgba(11, 15, 26, 0.06);
+  --shadow-sm: 0 1px 2px rgba(11, 15, 26, 0.06),
+               0 2px 6px rgba(11, 15, 26, 0.05);
+  --shadow-md: 0 2px 4px rgba(11, 15, 26, 0.05),
+               0 8px 20px rgba(11, 15, 26, 0.08);
+  --shadow-lg: 0 4px 10px rgba(11, 15, 26, 0.06),
+               0 18px 44px rgba(11, 15, 26, 0.12);
+  --shadow-xl: 0 8px 18px rgba(11, 15, 26, 0.08),
+               0 32px 72px rgba(11, 15, 26, 0.16);
+
+  /* Inset (sunken wells, composer) */
+  --shadow-inset: inset 0 1px 2px rgba(11, 15, 26, 0.06);
+
+  /* Accent glow — used sparingly on active retrieval state */
+  --glow-signal: 0 0 0 1px color-mix(in oklab, var(--signal-500) 30%, transparent),
+                 0 4px 18px color-mix(in oklab, var(--signal-500) 22%, transparent);
+}
+
+[data-theme="dark"] {
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4),
+               0 2px 6px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.4),
+               0 8px 20px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 4px 10px rgba(0, 0, 0, 0.45),
+               0 18px 44px rgba(0, 0, 0, 0.55);
+  --shadow-xl: 0 8px 18px rgba(0, 0, 0, 0.5),
+               0 32px 72px rgba(0, 0, 0, 0.6);
+}
+
+/* tokens/theme-minimal.css */
+/* ============================================================
+   MINIMAL THEME — Agentic RAG
+   A restrained, near-monochrome variant. Applied via
+   <html data-theme="minimal">. Hierarchy comes from type,
+   space, and hairline borders — not color or shadow.
+
+   Principles:
+   - Agent primary → ink (near-black), not cobalt.
+   - Retrieval hues survive only where they carry meaning
+     (vector vs graph), heavily desaturated.
+   - Surfaces flat & white; shadows mostly removed;
+     structure carried by 1px hairlines.
+   ============================================================ */
+
+[data-theme="minimal"] {
+  /* Surfaces — flat white */
+  --surface-page:    #FFFFFF;
+  --surface-card:    #FFFFFF;
+  --surface-sunken:  var(--ink-50);
+  --surface-raised:  #FFFFFF;
+  --surface-inverse: var(--ink-950);
+  --surface-overlay: color-mix(in oklab, var(--ink-950) 40%, transparent);
+
+  /* Text — a touch softer, more air */
+  --text-strong: var(--ink-900);
+  --text-body:   var(--ink-700);
+  --text-muted:  var(--ink-500);
+  --text-faint:  var(--ink-400);
+  --text-link:   var(--ink-900);
+
+  /* Borders — hairline */
+  --border-subtle:  var(--ink-100);
+  --border-default: var(--ink-200);
+  --border-strong:  var(--ink-300);
+  --border-focus:   var(--ink-800);
+
+  /* Primary → ink */
+  --accent:           var(--ink-900);
+  --accent-hover:     var(--ink-950);
+  --accent-soft:      var(--ink-50);
+  --accent-soft-text: var(--ink-900);
+
+  /* Focus ring — neutral */
+  --ring: 0 0 0 3px color-mix(in oklab, var(--ink-900) 14%, transparent);
+
+  /* Retrieval modes — muted, meaning-only */
+  --mode-vector:       #3E7A70;
+  --mode-vector-soft:  #F4F7F6;
+  --mode-vector-text:  #356B62;
+  --mode-graph:        #5E5386;
+  --mode-graph-soft:   #F6F4FA;
+  --mode-graph-text:   #574B7C;
+
+  /* Neutralize raw hue tokens that components reference directly
+     (borders / marks). Scoped to minimal only — specimen cards
+     live outside this scope and keep the full palette. */
+  --signal-100: var(--ink-100);
+  --signal-200: var(--ink-200);
+  --signal-300: var(--ink-300);
+  --signal-400: var(--ink-500);
+  --vector-300: #CBDEDA;
+  --graph-300:  #D9D2E8;
+
+  /* Elevation — flat; keep a whisper only for floating layers */
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow-md: 0 1px 2px rgba(11, 15, 26, 0.04),
+               0 6px 16px rgba(11, 15, 26, 0.05);
+  --shadow-lg: 0 2px 6px rgba(11, 15, 26, 0.05),
+               0 14px 34px rgba(11, 15, 26, 0.07);
+  --shadow-xl: 0 4px 10px rgba(11, 15, 26, 0.06),
+               0 26px 60px rgba(11, 15, 26, 0.09);
+}
+
+/* tokens/motion.css */
+/* ============================================================
+   MOTION — Agentic RAG · quick, precise, no bounce
+   ============================================================ */
+
+:root {
+  --dur-instant: 80ms;  /* @kind other */
+  --dur-fast:    140ms; /* @kind other */
+  --dur-base:    200ms; /* @kind other */
+  --dur-slow:    320ms; /* @kind other */
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);      /* @kind other */
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);   /* @kind other */
+  --ease-in:       cubic-bezier(0.4, 0, 1, 1);      /* @kind other */
+  --ease-inout:    cubic-bezier(0.65, 0, 0.35, 1);  /* @kind other */
+
+  --transition-control: background-color var(--dur-fast) var(--ease-standard),
+                        border-color var(--dur-fast) var(--ease-standard),
+                        color var(--dur-fast) var(--ease-standard),
+                        box-shadow var(--dur-fast) var(--ease-standard),
+                        transform var(--dur-fast) var(--ease-standard); /* @kind other */
+}
+
+@keyframes ar-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+@keyframes ar-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ar-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* tokens/base.css */
+/* ============================================================
+   BASE — Agentic RAG · light element resets & helpers
+   Only foundational element styling — components own the rest.
+   ============================================================ */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font: var(--type-body);
+  color: var(--text-body);
+  background: var(--surface-page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  color: var(--text-strong);
+  letter-spacing: var(--track-tight);
+  text-wrap: balance;
+}
+h1 { font: var(--type-h1); }
+h2 { font: var(--type-h2); }
+h3 { font: var(--type-h3); }
+
+p { margin: 0; text-wrap: pretty; }
+
+a {
+  color: var(--text-link);
+  text-decoration: none;
+  transition: var(--transition-control);
+}
+a:hover { text-decoration: underline; text-underline-offset: 2px; }
+
+code, kbd, samp {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--signal-500) 24%, transparent);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+  border-radius: var(--radius-sm);
+}
+
+/* Utility: mono eyebrow / section label */
+.ar-eyebrow {
+  font: var(--type-eyebrow);
+  text-transform: uppercase;
+  letter-spacing: var(--track-caps);
+  color: var(--text-muted);
+}
+
+/* ---- Interaction states for inline-styled components ---- */
+.ar-btn[data-variant="solid"]:not(:disabled):hover   { background: var(--accent-hover) !important; }
+.ar-btn[data-variant="soft"]:not(:disabled):hover    { background: color-mix(in oklab, var(--accent-soft) 70%, var(--accent)) !important; }
+.ar-btn[data-variant="outline"]:not(:disabled):hover  { background: var(--surface-sunken) !important; border-color: var(--border-strong) !important; }
+.ar-btn[data-variant="ghost"]:not(:disabled):hover    { background: var(--surface-sunken) !important; }
+.ar-btn[data-variant="danger"]:not(:disabled):hover   { background: var(--danger-600) !important; }
+.ar-btn:not(:disabled):active { transform: translateY(0.5px) scale(0.994); }
+
+.ar-iconbtn:not(:disabled):hover { background: var(--surface-sunken) !important; color: var(--text-strong) !important; }
+.ar-iconbtn:not(:disabled):active { transform: scale(0.94); }
+
+.ar-input:hover:not(:focus):not([disabled]) { border-color: var(--border-strong) !important; }
+.ar-input:focus { border-color: var(--border-focus) !important; box-shadow: var(--ring) !important; }
+
+.ar-chip-interactive:hover { border-color: var(--border-strong) !important; background: var(--surface-sunken) !important; }
+
+.ar-doc-chip:hover { border-color: var(--border-strong) !important; box-shadow: var(--shadow-sm) !important; }
+
+/* Thin technical scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-300) transparent;
 }
