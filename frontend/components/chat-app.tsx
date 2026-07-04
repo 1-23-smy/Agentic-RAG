@@ -25,6 +25,7 @@ export function ChatApp() {
   const [isSending, setIsSending] = useState(false);
   const [showSources, setShowSources] = useState(true);
   const [activeIngestionFilename, setActiveIngestionFilename] = useState<string | null>(null);
+  // Presentation-only: highlights the selected chip; /chat has no per-document filter yet.
   const [activeDocId, setActiveDocId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
