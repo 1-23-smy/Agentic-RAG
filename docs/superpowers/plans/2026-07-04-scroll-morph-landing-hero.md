@@ -24,7 +24,7 @@
 
 **Files:**
 - Create: `frontend/app/app/page.tsx`
-- Modify: `frontend/app/page.tsx` (temporarily left as-is here; Task 5 replaces its content with the new hero — this task only adds the new route so both exist briefly, avoiding a broken intermediate state)
+- Modify: `frontend/app/page.tsx` (temporarily left as-is here; Task 6 replaces its content with the new hero — this task only adds the new route so both exist briefly, avoiding a broken intermediate state)
 
 **Interfaces:**
 - Produces: the route `/app` renders `<ChatApp />` (imported from `@/components/chat-app`, unchanged).
