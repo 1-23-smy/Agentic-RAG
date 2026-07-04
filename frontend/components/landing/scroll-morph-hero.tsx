@@ -166,8 +166,12 @@ export function ScrollMorphHero() {
           const spread = isMobile ? 104 : 132;
           const start = -90 - spread / 2;
           const step = spread / (TOTAL_CORPUS_DOCS - 1);
-          const bounded = -clamp(a.rSmooth, 0, 1) * (spread * 0.8);
-          const ca = start + i * step + bounded;
+          const shuffleShift = -clamp(a.rSmooth, 0, 1) * (spread * 0.8);
+          // Wrap each card's position within the fixed [0, spread) window so cards
+          // cycle back into view from the opposite edge instead of drifting off-screen
+          // as shuffleShift grows — the visible arc always stays full.
+          const wrappedOffset = (((i * step + shuffleShift) % spread) + spread) % spread;
+          const ca = start + wrappedOffset;
           const car = (ca * Math.PI) / 180;
           const arc = {
             x: Math.cos(car) * arcR + a.pSmooth,
