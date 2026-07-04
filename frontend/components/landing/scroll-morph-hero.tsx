@@ -14,7 +14,7 @@ const MORPH_BREAKPOINT = 0.2; // ring→arc morph completes at this fraction of 
 const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;
 const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
 
-type Phase = "scatter" | "line" | "ring";
+type Phase = "scatter" | "ring";
 
 interface CardTransform {
   x: number;
@@ -118,11 +118,9 @@ export function ScrollMorphHero() {
 
   // intro sequence
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase("line"), 500);
-    const t2 = setTimeout(() => setPhase("ring"), 2400);
+    const t1 = setTimeout(() => setPhase("ring"), 2400);
     return () => {
       clearTimeout(t1);
-      clearTimeout(t2);
     };
   }, []);
 
@@ -149,10 +147,6 @@ export function ScrollMorphHero() {
         let goal: CardTransform;
         if (p === "scatter") {
           goal = scatter[i];
-        } else if (p === "line") {
-          const sp = 74;
-          const lineX = i * sp - (TOTAL_CORPUS_DOCS * sp) / 2;
-          goal = { x: lineX, y: 0, rot: 0, scale: 1, op: 1 };
         } else {
           const rad = Math.min(minDim * 0.35, 340);
           const ang = (i / TOTAL_CORPUS_DOCS) * 360;
