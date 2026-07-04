@@ -1,5 +1,5 @@
-import { ChatApp } from "@/components/chat-app";
+import { ScrollMorphHero } from "@/components/landing/scroll-morph-hero";
 
 export default function Home() {
-  return <ChatApp />;
+  return <ScrollMorphHero />;
 }
