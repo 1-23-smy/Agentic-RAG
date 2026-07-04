@@ -1,0 +1,348 @@
+/* frontend/components/landing/scroll-morph-hero.css */
+/* Ported verbatim from the Claude Design System's scroll-morph-hero concept
+   (ui_kits/agentic-rag-futuristic/scroll-morph-hero.html), with two
+   structural edits: touch-action:none removed (real page scroll needs
+   native touch scrolling), and .smh-root restructured from a fixed
+   full-viewport root into a `position:sticky` child of a tall wrapping
+   section (see scroll-morph-hero.tsx) instead of filling a 100vh parent. */
+
+.smh-root {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(900px 620px at 80% 6%, rgba(139, 92, 246, 0.16), transparent 60%),
+    radial-gradient(1000px 720px at 10% 96%, rgba(18, 181, 166, 0.14), transparent 60%),
+    linear-gradient(180deg, #070a14, #04060d);
+  color: #e7ecf6;
+  font-family: var(--font-sans);
+  perspective: 1400px;
+}
+.smh-root::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: linear-gradient(rgba(120, 140, 190, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 140, 190, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle at 50% 50%, #000 40%, transparent 78%);
+}
+
+.smh-eyebrow {
+  font: var(--fw-semibold) 10px/1 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  color: #6e7ca0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.smh-eyebrow--live i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #12b5a6;
+  box-shadow: 0 0 10px #12b5a6;
+  animation: smh-blink 1.4s infinite;
+}
+
+.smh-intro {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 16px;
+  pointer-events: none;
+}
+.smh-intro-h {
+  font: var(--fw-extra) 60px/1.0 var(--font-display);
+  letter-spacing: -0.04em;
+  margin: 0;
+  background: linear-gradient(180deg, #fff, #9fafdc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.smh-scrollhint {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  font: var(--fw-bold) 10px/1 var(--font-mono);
+  letter-spacing: 0.3em;
+  color: #7b88ac;
+}
+.smh-arrow {
+  width: 15px;
+  height: 22px;
+  border: 1.5px solid #5f6c90;
+  border-radius: 8px;
+  position: relative;
+}
+.smh-arrow::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 4px;
+  width: 2px;
+  height: 5px;
+  background: #7fa0ff;
+  border-radius: 2px;
+  transform: translateX(-50%);
+  animation: smh-wheel 1.5s infinite;
+}
+
+.smh-arc-content {
+  position: absolute;
+  top: 8%;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  padding: 0 24px;
+  pointer-events: none;
+}
+.smh-arc-h {
+  font: var(--fw-extra) 52px/1.02 var(--font-display);
+  letter-spacing: -0.04em;
+  margin: 6px 0 0;
+  background: linear-gradient(180deg, #fff, #a9b6de);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.smh-arc-p {
+  font: var(--fw-regular) 15px/1.6 var(--font-sans);
+  color: #93a0c4;
+  max-width: 500px;
+  margin: 0;
+}
+.smh-cta {
+  pointer-events: auto;
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  border-radius: 999px;
+  padding: 12px 22px;
+  cursor: pointer;
+  color: #fff;
+  font: var(--fw-semibold) 14px/1 var(--font-sans);
+  background: linear-gradient(180deg, #2f6bff, #143fcc);
+  box-shadow: 0 8px 28px rgba(47, 107, 255, 0.5);
+  transition: 0.2s;
+  text-decoration: none;
+}
+.smh-cta span {
+  font-family: var(--font-mono);
+  font-size: 16px;
+}
+.smh-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 34px rgba(47, 107, 255, 0.7);
+}
+
+.smh-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.smh-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 66px;
+  height: 90px;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+}
+.smh-flip {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.2, 0, 0, 1);
+}
+.smh-card:hover .smh-flip {
+  transform: rotateY(180deg);
+}
+.smh-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 9px;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.smh-front {
+  background: linear-gradient(160deg, #fdfdff, #eef1f8);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+  padding: 9px 8px;
+  display: flex;
+  flex-direction: column;
+}
+.smh-tab {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 22px;
+  height: 5px;
+  border-radius: 0 9px 0 6px;
+}
+.smh-front--vector .smh-tab {
+  background: #12b5a6;
+  box-shadow: -6px 0 10px rgba(18, 181, 166, 0.5);
+}
+.smh-front--graph .smh-tab {
+  background: #8b5cf6;
+  box-shadow: -6px 0 10px rgba(139, 92, 246, 0.5);
+}
+.smh-docid {
+  font: var(--fw-semibold) 6px/1 var(--font-mono);
+  letter-spacing: 0.1em;
+  color: #8a93a8;
+}
+.smh-title {
+  font: var(--fw-bold) 7.5px/1.1 var(--font-sans);
+  color: #1b2333;
+  margin-top: 3px;
+  letter-spacing: -0.01em;
+}
+.smh-lines {
+  margin-top: 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 3.5px;
+}
+.smh-lines i {
+  height: 2.5px;
+  border-radius: 2px;
+  background: #c9d0de;
+}
+
+.smh-back {
+  transform: rotateY(180deg);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: linear-gradient(180deg, rgba(22, 28, 45, 0.96), rgba(12, 16, 28, 0.96));
+}
+.smh-card:hover .smh-back {
+  opacity: 1;
+}
+.smh-back--vector {
+  border: 1px solid rgba(18, 181, 166, 0.5);
+  box-shadow: inset 0 0 20px rgba(18, 181, 166, 0.18);
+}
+.smh-back--graph {
+  border: 1px solid rgba(139, 92, 246, 0.5);
+  box-shadow: inset 0 0 20px rgba(139, 92, 246, 0.18);
+}
+.smh-chunk {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+}
+.smh-score {
+  font: var(--fw-bold) 13px/1 var(--font-mono);
+  color: #3fe0ce;
+  text-shadow: 0 0 10px rgba(18, 181, 166, 0.6);
+}
+.smh-snip {
+  font: var(--fw-regular) 6.5px/1.35 var(--font-sans);
+  color: #aeb8d6;
+}
+.smh-graph {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.smh-node {
+  font: var(--fw-semibold) 7px/1 var(--font-mono);
+  color: #c9bef6;
+  background: rgba(139, 92, 246, 0.18);
+  border: 1px solid rgba(139, 92, 246, 0.5);
+  border-radius: 4px;
+  padding: 2px 5px;
+}
+.smh-rel {
+  font: var(--fw-medium) 5px/1 var(--font-mono);
+  color: #7e70b8;
+  letter-spacing: 0.05em;
+}
+
+.smh-rail {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 120px;
+  background: rgba(140, 160, 220, 0.12);
+  border-radius: 3px;
+  z-index: 7;
+  overflow: hidden;
+}
+.smh-rail-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(180deg, #12b5a6, #2f6bff, #8b5cf6);
+  box-shadow: 0 0 10px rgba(47, 107, 255, 0.6);
+}
+
+@keyframes smh-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+@keyframes smh-wheel {
+  0% {
+    top: 4px;
+    opacity: 1;
+  }
+  70% {
+    top: 12px;
+    opacity: 0;
+  }
+  100% {
+    top: 4px;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smh-arrow::after,
+  .smh-eyebrow--live i {
+    animation: none;
+  }
+}
