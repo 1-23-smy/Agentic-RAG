@@ -217,9 +217,9 @@ export function ScrollMorphHero() {
       // decays each frame toward equilibrium. Disabled under reduced motion
       // (no automatic motion), but manual nudges from onWheel/onTouchMove/
       // onKeyDown still update flyVel/fly directly regardless.
-      if (a.cSmooth > 0.01 && !reducedMotionRef.current) {
-        if (performance.now() - a.lastInteract > 3000) a.autoPlay = true;
-        if (a.autoPlay) a.flyVel += 0.00016;
+      if (a.cSmooth > 0.01) {
+        if (!reducedMotionRef.current && performance.now() - a.lastInteract > 3000) a.autoPlay = true;
+        if (a.autoPlay && !reducedMotionRef.current) a.flyVel += 0.00016;
         a.flyVel *= 0.94;
         a.fly += a.flyVel;
       }
