@@ -51,3 +51,26 @@ export function buildCorpusDocs(): CorpusDoc[] {
     };
   });
 }
+
+export interface TunnelDirection {
+  x: number;
+  y: number;
+  rot: number;
+}
+
+/**
+ * ACT 3 depth-gallery flight directions — one per card, spread evenly via
+ * the golden angle so cards stream toward the camera from all directions
+ * without visually clustering.
+ */
+export function buildTunnelDirections(count: number): TunnelDirection[] {
+  return Array.from({ length: count }, (_, i) => {
+    const ang = i * 2.39996; // golden angle in radians
+    const r = 0.32 + (i % 5) * 0.15;
+    return {
+      x: Math.cos(ang) * r,
+      y: Math.sin(ang) * r,
+      rot: (i % 2 ? 1 : -1) * (4 + (i % 3) * 4),
+    };
+  });
+}
