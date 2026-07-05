@@ -170,7 +170,7 @@
   width: 66px;
   height: 90px;
   transform-style: preserve-3d;
-  will-change: transform, opacity;
+  will-change: transform, opacity, filter;
 }
 .smh-flip {
   position: relative;
@@ -345,4 +345,65 @@
   .smh-eyebrow--live i {
     animation: none;
   }
+}
+
+/* ACT 3 — console content over the flythrough */
+.smh-console-content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 63%;
+  bottom: auto;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  padding: 0 24px;
+}
+.smh-console-h {
+  font: var(--fw-extra) 52px/1.02 var(--font-display);
+  letter-spacing: -0.04em;
+  margin: 6px 0 0;
+  background: linear-gradient(180deg, #fff, #a9b6de);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.smh-console-content::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  width: 720px;
+  height: 360px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgba(6, 9, 18, 0.86), rgba(6, 9, 18, 0.45) 55%, transparent 80%);
+  filter: blur(8px);
+}
+.smh-scrollhint--arc {
+  margin-top: 10px;
+  color: #8fa0c8;
+}
+
+/* ACT 3 navigation hint */
+.smh-navhint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22px;
+  z-index: 7;
+  text-align: center;
+  pointer-events: none;
+  font: var(--fw-semibold) 11px/1.5 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #93a0c4;
+}
+.smh-navhint-sub {
+  color: #5f6c90;
+  letter-spacing: 0.14em;
 }
