@@ -57,6 +57,7 @@ export function ScrollMorphHero() {
     flyVel: 0,
     autoPlay: true,
     lastInteract: 0,
+    act3Latched: false,
   });
   const size = useRef({ w: 0, h: 0 });
   const phaseRef = useRef<Phase>("scatter");
@@ -76,6 +77,11 @@ export function ScrollMorphHero() {
     [docs]
   );
   const cur = useRef<CardTransform[]>(scatter.map((s) => ({ ...s })));
+  // Tracks each card's previous ACT 3 depth (n) so a modulo wrap (near → far
+  // reset) can be detected and painted instantly instead of being smoothed
+  // across by the persistent per-card easing below, which would otherwise
+  // visibly "reverse" the card back toward the center for several frames.
+  const prevN = useRef<Float32Array>(new Float32Array(TOTAL_CORPUS_DOCS).fill(-1));
 
   // reduced-motion preference
   useEffect(() => {
@@ -139,7 +145,7 @@ export function ScrollMorphHero() {
     };
 
     const onWheel = (e: WheelEvent) => {
-      if (anim.current.progress >= 1 && e.deltaY > 0) {
+      if (anim.current.act3Latched && e.deltaY > 0) {
         e.preventDefault();
         nudge(e.deltaY * 0.0005);
       }
@@ -155,14 +161,14 @@ export function ScrollMorphHero() {
       const y = e.touches[0].clientY;
       const dy = touchY - y;
       touchY = y;
-      if (anim.current.progress >= 1 && dy > 0) {
+      if (anim.current.act3Latched && dy > 0) {
         e.preventDefault();
         nudge(dy * 0.0006);
       }
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (anim.current.progress < 1) return; // let native keyboard scrolling work for Acts 1/2
+      if (!anim.current.act3Latched) return; // let native keyboard scrolling work for Acts 1/2
       if (e.key === "ArrowDown" || e.key === "ArrowRight") {
         e.preventDefault();
         nudge(0.03);
@@ -205,7 +211,15 @@ export function ScrollMorphHero() {
       const a = anim.current;
       a.morph = clamp(a.progress / ACT1_END, 0, 1);
       a.rotate = clamp((a.progress - ACT1_END) / (ACT2_END - ACT1_END), 0, 1);
-      a.collapse = clamp((a.progress - ACT2_END) / (1 - ACT2_END), 0, 1);
+
+      // ACT 3 engagement is latched with hysteresis: once real scroll reaches
+      // the bottom, momentary scroll-up "bounce" (common momentum/deceleration
+      // wheel behavior, not just trackpads) must not immediately hand control
+      // back to Acts 1/2 mid-flythrough — only a deliberate, sustained
+      // scroll-up (progress dropping well below 1) releases the latch.
+      if (a.progress >= 1) a.act3Latched = true;
+      else if (a.progress < 0.9) a.act3Latched = false;
+      a.collapse = a.act3Latched ? 1 : clamp((a.progress - ACT2_END) / (1 - ACT2_END), 0, 1);
 
       const easeFactor = reducedMotionRef.current ? 1 : 0.09;
       a.mSmooth = lerp(a.mSmooth, a.morph, easeFactor);
@@ -233,6 +247,7 @@ export function ScrollMorphHero() {
       for (let i = 0; i < TOTAL_CORPUS_DOCS; i++) {
         let goal: CardTransform;
         let blurGoal = 0;
+        let wrapped = false;
         if (p === "scatter") {
           goal = scatter[i];
         } else {
@@ -275,6 +290,9 @@ export function ScrollMorphHero() {
           if (d > 0.001) {
             const dir = tunnelDir[i];
             const n = ((i / TOTAL_CORPUS_DOCS + a.fly) % 1 + 1) % 1; // 0 far → 1 near (streams toward camera)
+            const prev = prevN.current[i];
+            wrapped = prev >= 0 && n < prev - 0.5;
+            prevN.current[i] = n;
             const depth = n * n; // accelerate as it approaches
             const tScale = lerp(0.16, 2.8, depth);
             const tx = dir.x * depth * (w * 0.64) + a.pSmooth * 0.4;
@@ -297,12 +315,24 @@ export function ScrollMorphHero() {
           }
         }
         const c = cur.current[i];
-        c.x = lerp(c.x, goal.x, easeFactor);
-        c.y = lerp(c.y, goal.y, easeFactor);
-        c.rot = lerp(c.rot, goal.rot, easeFactor);
-        c.scale = lerp(c.scale, goal.scale, easeFactor);
-        c.op = lerp(c.op, goal.op, reducedMotionRef.current ? 1 : 0.1);
-        c.blur = lerp(c.blur, blurGoal, reducedMotionRef.current ? 1 : 0.12);
+        if (wrapped) {
+          // Depth cycle just reset (near → far): paint the new far-plane
+          // state directly. Easing across this discontinuity would smoothly
+          // "reverse" the card back toward the center over several frames.
+          c.x = goal.x;
+          c.y = goal.y;
+          c.rot = goal.rot;
+          c.scale = goal.scale;
+          c.op = goal.op;
+          c.blur = blurGoal;
+        } else {
+          c.x = lerp(c.x, goal.x, easeFactor);
+          c.y = lerp(c.y, goal.y, easeFactor);
+          c.rot = lerp(c.rot, goal.rot, easeFactor);
+          c.scale = lerp(c.scale, goal.scale, easeFactor);
+          c.op = lerp(c.op, goal.op, reducedMotionRef.current ? 1 : 0.1);
+          c.blur = lerp(c.blur, blurGoal, reducedMotionRef.current ? 1 : 0.12);
+        }
         const el = cardRefs.current[i];
         if (el) {
           el.style.transform = `translate(-50%,-50%) translate(${c.x}px,${c.y}px) rotate(${c.rot}deg) scale(${c.scale})`;
