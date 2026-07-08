@@ -90,6 +90,10 @@ def _safe_pdf_filename(filename: str) -> str:
 async def root():
     return {"message": "Agentic RAG Backend is Live and Running!"}
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
 @app.post("/ingest/upload", response_model=IngestionUploadResponse)
 async def upload_pdf(file: UploadFile = File(...)):
     filename = file.filename or ""

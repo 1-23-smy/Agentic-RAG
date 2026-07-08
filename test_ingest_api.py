@@ -139,6 +139,11 @@ class IngestApiTest(unittest.TestCase):
             else:
                 sys.modules[name] = module
 
+    def test_health_returns_ok(self):
+        result = asyncio.run(self.main.health())
+
+        self.assertEqual(result, {"status": "ok"})
+
     def test_upload_rejects_non_pdf(self):
         upload = FakeUploadFile("notes.txt")
         self.addCleanup(upload.file.close)
