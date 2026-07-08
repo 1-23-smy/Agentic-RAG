@@ -14,10 +14,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+
 app = Celery(
     'rag_ingestion_worker',
-    broker='redis://localhost:6379/0',
-    backend='redis://localhost:6379/0'
+    broker=REDIS_URL,
+    backend=REDIS_URL
 )
 
 app.conf.update(

@@ -1,4 +1,5 @@
 import importlib
+import os
 import sys
 import types
 import unittest
@@ -7,6 +8,8 @@ from pathlib import Path
 
 class FakeCelery:
     def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
         self.conf = {}
 
     def task(self, *args, **kwargs):
@@ -15,6 +18,7 @@ class FakeCelery:
 
 class WorkerConfigTest(unittest.TestCase):
     def setUp(self):
+        self.original_redis_url = os.environ.get("REDIS_URL")
         self.original_modules = {
             name: sys.modules.get(name)
             for name in [
@@ -67,12 +71,32 @@ class WorkerConfigTest(unittest.TestCase):
                 sys.modules.pop(name, None)
             else:
                 sys.modules[name] = module
+        if self.original_redis_url is None:
+            os.environ.pop("REDIS_URL", None)
+        else:
+            os.environ["REDIS_URL"] = self.original_redis_url
 
     def test_worker_adds_project_root_to_import_path(self):
         worker = importlib.import_module("worker")
 
         self.assertEqual(worker.PROJECT_ROOT, Path(worker.__file__).resolve().parent)
         self.assertIn(str(worker.PROJECT_ROOT), sys.path)
+
+    def test_worker_uses_default_redis_url_when_env_not_set(self):
+        os.environ.pop("REDIS_URL", None)
+
+        worker = importlib.import_module("worker")
+
+        self.assertEqual(worker.app.kwargs["broker"], "redis://localhost:6379/0")
+        self.assertEqual(worker.app.kwargs["backend"], "redis://localhost:6379/0")
+
+    def test_worker_uses_redis_url_env_var_when_set(self):
+        os.environ["REDIS_URL"] = "redis://redis:6379/0"
+
+        worker = importlib.import_module("worker")
+
+        self.assertEqual(worker.app.kwargs["broker"], "redis://redis:6379/0")
+        self.assertEqual(worker.app.kwargs["backend"], "redis://redis:6379/0")
 
 
 if __name__ == "__main__":
